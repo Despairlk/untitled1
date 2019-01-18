@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculator</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+
+    }
+  </style>
+  <script src="../testhtml/js/jquery.min.js"></script>
+  <script>
+
+  </script>
+</head>
+<body>
+
+<div id="divout">
+  <div><h3>计算器</h3></div>
+  <table>
+    <tr>
+      <div name="text" id="textid1"><h4 id="h4"></h4></div>
+      <div name="text" id="textid2"><h2 id="h2"></h2></div>
+    </tr>
+  </table>
+  <table id="tableid1">
+
+  </table>
+</div>
+<script>
+
+  $("td>button").css({
+    "width": "100px",
+    "height": "60px",
+    "margin": "0px 0px",
+    "font-size": "19px",
+    "onclick": "reflush(event)"
+  });
+
+  $("#divout").css({
+    "border": "3px solid black",
+    "width": "420px",
+    "height": "530px",
+    "margin": "0px auto"
+  });
+  $("#textid1").css({
+    "width": "400px",
+    "border": "3px solid black",
+    "borderBottom": "0px",
+    "height": "80px",
+    "margin-left": "5px"
+  });
+  $("#textid2").css({
+    "width": "400px",
+    "border": "3px solid black",
+    "borderTop": "0px",
+    "height": "80px",
+    "margin-left": "5px"
+  });
+  var list = {
+    "row1": ["ce", "c", "◁", "/"],
+    "row2": ["7", "8", "9", "*"],
+    "row3": ["4", "5", "6", "-"],
+    "row4": ["1", "2", "3", "+"],
+    "row5": ["+/-", "0", ".", "="],
+  }
+  $(initializeBtn());
+
+
+  function initializeBtn() {
+    for (var i in list) {
+      //新建一行并添加id属性
+      var $trn = $("<tr></tr>");
+      $trn.attr("id", "tr" + i);
+      for (var j in list[i]) {
+
+        //添加一个按键并添加点击事件
+        var $title = $("<button id=" + list[i][j] + " >" + list[i][j] + "</button>");
+        $title.css({
+          "width": "100px",
+          "height": "60px",
+          "margin": "0px 0px",
+          "font-size": "19px",
+        }).click(function () {
+          reflush(this);
+        });
+        //将每个按钮添加到本行中
+        $trn.append($title);
+      }
+      //将这一行添加到table对象中
+      $("#tableid1").append($trn);
+    }
+  }
+
+  var h2value = "";
+  var h4value = "";
+  //当上一次输入符号+-*/时 再输入 +-*/ 时改变符号
+  var flag = false;
+  var symbolflag = false;
+  function reflush(btn) {
+//    console.log(isNumber(btn.innerHTML));
+
+//    "row1": ["ce", "c", "◁", "/"],
+//      "row2": ["7", "8", "9", "*"],
+//      "row3": ["4", "5", "6", "-"],
+//      "row4": ["1", "2", "3", "+"],
+//      "row5": ["+/-", "0", ".", "="],
+    var htmval = btn.innerHTML;
+    switch (htmval) {
+      //清空所有数据
+      case "ce":
+        console.log("ce");
+        h2value="";
+        $("#h2").html(h2value);
+        h4value="";
+        $("#h4").html(h4value);
+        flag = false;
+        symbolflag = false;
+        break;
+        //清空下面一行的数据
+      case "c":
+        console.log("c");
+        $("#h2").html("");
+        h2value="";
+        break;
+      case "◁":
+        console.log("◁");
+        h2value=h2value.substr(0,h2value.length-1);
+        $("#h2").html(h2value);
+        break;
+      case "=":
+        console.log("=");//计算
+        //如果上一次输入的是运算符 这时应去掉h4中的最后那一位 然后调用eval 函数
+        if(symbolflag==false){
+          h4value=h4value.substr(0,h4value.length-1);
+          h4value=eval(h4value);
+          $("#h4").html(h4value);
+          h2value="";
+          $("#h2").html(h2value);
+          }else {
+          h4value += h2value;
+          h4value=eval(h4value);
+          $("#h4").html(h4value);
+          h2value="";
+          $("#h2").html(h2value);
+        }
+        break;
+      default:  //输入的是数字和运算符时
+          //输入数字时直接加入h2末尾中
+        //如果上一次输入的是等号 这时应清空h4中的内容
+        if ((flag = isNumber(htmval))) {
+
+          h2value += btn.innerHTML;
+          $("#h2").html(h2value);
+
+          // 连续输入两次运算符时后面的替换前面的
+          // 当flag与symbolflag 同为false时 先截取 再添加
+        } else if((symbolflag==flag)&&!symbolflag) {
+          h4value=h4value.substr(0,h4value.length-1);
+          h2value += btn.innerHTML;
+          h4value += h2value;             //1++
+          $("#h4").html(h4value);
+          $("#h2").html("");
+          h2value = "";
+
+
+          //输入符号时将h2中内容加入h4末尾中
+          //当value 为刚计算出的数字时 应清空h4中内容
+        }else{
+          console.log(isNumbers(h4value));
+          if(isNumbers(h4value)){
+            h4value="";
+            $("#h4").html(h4value);
+          }
+          h2value += btn.innerHTML;
+          h4value += h2value;
+          $("#h4").html(h4value);
+          $("#h2").html("");
+          h2value = "";
+        }
+        symbolflag=flag;
+        break;
+    }
+
+  }
+  //判断输入的是否是数字 小数点
+  function isNumber(num) {
+    if (num == ".") {
+      console.log(num + "是点");
+      return true;
+    }
+    if (!isNaN(num)) {
+      console.log(num + "是数字");
+      return true;
+    }
+    console.log(num + "不是数字");
+    return false;
+  }
+  /*校验是否全由数字组成 */
+  function isNumbers(str) {
+    var reg=/^[0-9]+[.]?[0-9]*$/;   /*定义验证表达式*/
+    console.log("h4value:"+str+" "+reg.test(str));
+    return reg.test(str);     /*进行验证*/
+  }
+  /*校验是否由运算符 */
+  function isOperator(str){
+    var reg = /^\D$/;
+    if( reg.test(str) ){
+      console.log(str+"是单个运算符");
+    }else{
+      console.log(str+"不是单个运算符")
+    }
+  }
+
+</script>
+
+</body>
+</html>
